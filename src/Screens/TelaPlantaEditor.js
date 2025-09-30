@@ -14,6 +14,9 @@ const condicoes = [
 ];
 
 export default function TelaPlantaEditor() {
+  // Estado para controlar a etapa atual
+  const [etapa, setEtapa] = useState('configuracao'); // 'configuracao' ou 'editor'
+
   // Estados básicos
   const [nomePatio, setNomePatio] = useState('');
   const [endereco, setEndereco] = useState('');
@@ -33,6 +36,20 @@ export default function TelaPlantaEditor() {
   // Refs
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
+
+  // Função para avançar para a etapa do editor
+  const avancarParaEditor = () => {
+    if (!nomePatio.trim() || !endereco.trim() || !responsavel.trim()) {
+      alert('DADOS INCOMPLETOS: Preencha todos os campos obrigatórios.');
+      return;
+    }
+    setEtapa('editor');
+  };
+
+  // Função para voltar para a configuração
+  const voltarParaConfiguracao = () => {
+    setEtapa('configuracao');
+  };
 
   // Funções de desenho
   const toggleDrawing = () => {
@@ -249,11 +266,6 @@ export default function TelaPlantaEditor() {
   };
 
   const salvarPatio = () => {
-    if (!nomePatio.trim() || !endereco.trim() || !responsavel.trim()) {
-      alert('DADOS INCOMPLETOS: Preencha todos os campos obrigatórios.');
-      return;
-    }
-
     if (zonas.length === 0) {
       alert('CONFIGURAÇÃO INVÁLIDA: Adicione pelo menos uma zona ao pátio.');
       return;
@@ -280,6 +292,194 @@ export default function TelaPlantaEditor() {
     return total + (capacidadeSubzonas > 0 ? capacidadeSubzonas : zona.capacidade);
   }, 0);
 
+  // TELA DE CONFIGURAÇÃO INICIAL
+  if (etapa === 'configuracao') {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #000 0%, #002714ff 100%)',
+        color: '#ffffff',
+        fontFamily: '"Courier New", monospace',
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        {/* Header do Sistema */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '50px',
+          borderBottom: '2px solid #01743A',
+          paddingBottom: '20px'
+        }}>
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            letterSpacing: '3px',
+            color: '#01743A',
+            textShadow: '0 0 20px rgba(1,116,58,0.5)',
+            margin: '0'
+          }}>
+            CONFIGURADOR DE PÁTIO
+          </h1>
+          <p style={{
+            color: '#888',
+            fontSize: '0.9rem',
+            marginTop: '10px'
+          }}>
+            SISTEMA DE GERENCIAMENTO ESPACIAL
+          </p>
+        </div>
+
+        {/* Formulário de Configuração Básica */}
+        <div style={{
+          width: '500px',
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(1,116,58,0.3)',
+          borderRadius: '8px',
+          padding: '40px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginBottom: '30px',
+            borderBottom: '1px solid rgba(1,116,58,0.2)',
+            paddingBottom: '15px'
+          }}>
+            <span style={{ fontSize: '1.5rem' }}>⚙️</span>
+            <h2 style={{ margin: '0', fontSize: '1.3rem' }}>INFORMAÇÕES DO PÁTIO</h2>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+                NOME PÁTIO
+              </label>
+              <input
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(1,116,58,0.3)',
+                  borderRadius: '4px',
+                  color: '#fff',
+                  fontSize: '0.9rem',
+                  fontFamily: '"Courier New", monospace'
+                }}
+                placeholder="DIGITE O NOME DO PÁTIO"
+                value={nomePatio}
+                onChange={(e) => setNomePatio(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+                ENDEREÇO
+              </label>
+              <input
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(1,116,58,0.3)',
+                  borderRadius: '4px',
+                  color: '#fff',
+                  fontSize: '0.9rem',
+                  fontFamily: '"Courier New", monospace'
+                }}
+                placeholder="LOCALIZAÇÃO DO PÁTIO"
+                value={endereco}
+                onChange={(e) => setEndereco(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+                RESPONSÁVEL TÊCNICO
+              </label>
+              <input
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(1,116,58,0.3)',
+                  borderRadius: '4px',
+                  color: '#fff',
+                  fontSize: '0.9rem',
+                  fontFamily: '"Courier New", monospace'
+                }}
+                placeholder="NOME DO RESPONSÁVEL"
+                value={responsavel}
+                onChange={(e) => setResponsavel(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+                CAPACIDADE MÁXIMA
+              </label>
+              <input
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(1,116,58,0.3)',
+                  borderRadius: '4px',
+                  color: '#fff',
+                  fontSize: '0.9rem',
+                  fontFamily: '"Courier New", monospace'
+                }}
+                type="number"
+                placeholder="NÚMERO MÁXIMO DE VEÍCULOS"
+                value={capacidadeTotal}
+                onChange={(e) => setCapacidadeTotal(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <button 
+            style={{
+              width: '100%',
+              padding: '15px',
+              background: 'linear-gradient(135deg, rgba(1,116,58,0.3), rgba(1,116,58,0.5))',
+              border: '2px solid #01743A',
+              borderRadius: '8px',
+              color: '#fff',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '2px',
+              boxShadow: '0 0 20px rgba(1,116,58,0.3)',
+              transition: 'all 0.3s',
+              marginTop: '30px'
+            }}
+            onClick={avancarParaEditor}
+            onMouseEnter={(e) => {
+              e.target.style.boxShadow = '0 0 30px rgba(1,116,58,0.6)';
+              e.target.style.transform = 'scale(1.02)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.boxShadow = '0 0 20px rgba(1,116,58,0.3)';
+              e.target.style.transform = 'scale(1)';
+            }}
+          >
+            <span>🚀</span>
+            <span>INICIAR CONFIGURAÇÃO DO PÁTIO</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // TELA DO EDITOR
   return (
     <div style={{
       minHeight: '100vh',
@@ -293,7 +493,8 @@ export default function TelaPlantaEditor() {
         textAlign: 'center',
         marginBottom: '30px',
         borderBottom: '2px solid #01743A',
-        paddingBottom: '20px'
+        paddingBottom: '20px',
+        position: 'relative'
       }}>
         <h1 style={{
           fontSize: '2.5rem',
@@ -311,11 +512,34 @@ export default function TelaPlantaEditor() {
           fontSize: '0.9rem',
           marginTop: '10px'
         }}>
-          SISTEMA DE GERENCIAMENTO ESPACIAL
+          EDITOR DE LAYOUT - {nomePatio.toUpperCase()}
         </p>
+        
+        {/* Botão para voltar à configuração */}
+        <button 
+          style={{
+            position: 'absolute',
+            top: '30px',
+            left: '30px',
+            padding: '10px 15px',
+            background: 'rgba(255,170,0,0.2)',
+            border: '1px solid rgba(255,170,0,0.5)',
+            borderRadius: '4px',
+            color: '#fff',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px'
+          }}
+          onClick={voltarParaConfiguracao}
+        >
+          <span>↩️</span>
+          <span>ALTERAR DADOS</span>
+        </button>
       </div>
 
-      {/* Layout Principal */}
+      {/* Layout Principal - EDITOR */}
       <div style={{ display: 'flex', gap: '20px' }}>
         {/* Painel de Controles */}
         <div style={{
@@ -324,113 +548,6 @@ export default function TelaPlantaEditor() {
           flexDirection: 'column',
           gap: '20px'
         }}>
-          {/* Dados Básicos */}
-          <div style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(1,116,58,0.3)',
-            borderRadius: '8px',
-            padding: '50px'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              marginBottom: '15px',
-              borderBottom: '1px solid rgba(1,116,58,0.2)',
-              paddingBottom: '10px'
-            }}>
-              <span style={{ fontSize: '1.2rem' }}>⚙️</span>
-              <h2 style={{ margin: '0', fontSize: '1.1rem' }}>CONFIGURAÇÃO BÁSICA</h2>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: '#01743A', marginBottom: '5px' }}>
-                  NOME PÁTIO
-                </label>
-                <input
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    background: 'rgba(0,0,0,0.5)',
-                    border: '1px solid rgba(1,116,58,0.3)',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    fontFamily: '"Courier New", monospace'
-                  }}
-                  placeholder="DIGITE O NOME DO PÁTIO"
-                  value={nomePatio}
-                  onChange={(e) => setNomePatio(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: '#01743A', marginBottom: '5px' }}>
-                  ENDEREÇO
-                </label>
-                <input
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    background: 'rgba(0,0,0,0.5)',
-                    border: '1px solid rgba(1,116,58,0.3)',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    fontFamily: '"Courier New", monospace'
-                  }}
-                  placeholder="LOCALIZAÇÃO DO PÁTIO"
-                  value={endereco}
-                  onChange={(e) => setEndereco(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: '#01743A', marginBottom: '5px' }}>
-                  RESPONSÁVEL TÊCNICO
-                </label>
-                <input
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    background: 'rgba(0,0,0,0.5)',
-                    border: '1px solid rgba(1,116,58,0.3)',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    fontFamily: '"Courier New", monospace'
-                  }}
-                  placeholder="NOME DO RESPONSÁVEL"
-                  value={responsavel}
-                  onChange={(e) => setResponsavel(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: '#01743A', marginBottom: '5px' }}>
-                  CAPACIDADE MÁXIMA
-                </label>
-                <input
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    background: 'rgba(0,0,0,0.5)',
-                    border: '1px solid rgba(1,116,58,0.3)',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    fontFamily: '"Courier New", monospace'
-                  }}
-                  type="number"
-                  placeholder="NÚMERO MÁXIMO DE VEÍCULOS"
-                  value={capacidadeTotal}
-                  onChange={(e) => setCapacidadeTotal(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
           {/* Controles de Desenho */}
           <div style={{
             background: 'rgba(255,255,255,0.05)',
@@ -943,6 +1060,92 @@ export default function TelaPlantaEditor() {
             <span>💾</span>
             <span>REGISTRAR PÁTIO</span>
           </button>
+
+          {/* Dados Básicos (agora abaixo do botão Registrar Pátio) */}
+          <div style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(1,116,58,0.3)',
+            borderRadius: '8px',
+            padding: '20px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginBottom: '15px',
+              borderBottom: '1px solid rgba(1,116,58,0.2)',
+              paddingBottom: '10px'
+            }}>
+              <span style={{ fontSize: '1.2rem' }}>📋</span>
+              <h2 style={{ margin: '0', fontSize: '1.1rem' }}>DADOS DO PÁTIO</h2>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: '#01743A', marginBottom: '3px' }}>
+                  NOME PÁTIO
+                </label>
+                <div style={{
+                  padding: '8px',
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(1,116,58,0.2)',
+                  borderRadius: '4px',
+                  fontSize: '0.9rem',
+                  color: '#fff'
+                }}>
+                  {nomePatio || 'NÃO INFORMADO'}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: '#01743A', marginBottom: '3px' }}>
+                  ENDEREÇO
+                </label>
+                <div style={{
+                  padding: '8px',
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(1,116,58,0.2)',
+                  borderRadius: '4px',
+                  fontSize: '0.9rem',
+                  color: '#fff'
+                }}>
+                  {endereco || 'NÃO INFORMADO'}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: '#01743A', marginBottom: '3px' }}>
+                  RESPONSÁVEL
+                </label>
+                <div style={{
+                  padding: '8px',
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(1,116,58,0.2)',
+                  borderRadius: '4px',
+                  fontSize: '0.9rem',
+                  color: '#fff'
+                }}>
+                  {responsavel || 'NÃO INFORMADO'}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: '#01743A', marginBottom: '3px' }}>
+                  CAPACIDADE MÁXIMA
+                </label>
+                <div style={{
+                  padding: '8px',
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(1,116,58,0.2)',
+                  borderRadius: '4px',
+                  fontSize: '0.9rem',
+                  color: '#fff'
+                }}>
+                  {capacidadeTotal || '0'} VEÍCULOS
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Canvas de Desenho */}
