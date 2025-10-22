@@ -2,28 +2,25 @@ import React, { useState, useRef } from 'react';
 import { Stage, Layer, Line, Rect, Text, Circle } from 'react-konva';
 
 const modelos = [
-  { id: 'mottu_e', nome: 'MOTTU_E', cor: 'rgba(1,116,58,0.4)', capacidade: 50 },
-  { id: 'sport_110_i', nome: 'SPORT_110_I', cor: 'rgba(1,116,58,0.5)', capacidade: 40 },
-  { id: 'mottu_sport', nome: 'MOTTU_SPORT', cor: 'rgba(1,116,58,0.6)', capacidade: 35 }
+  { id: 'mottu_e', nome: 'MOTTU_E', cor: 'rgba(1,116,58,0.4)'},
+  { id: 'sport_110_i', nome: 'SPORT_110_I', cor: 'rgba(1,116,58,0.5)'},
+  { id: 'mottu_sport', nome: 'MOTTU_SPORT', cor: 'rgba(1,116,58,0.6)'},
+  { id: 'mottu_esd', nome: 'MOTTU_ESD', cor: 'rgba(1,116,58,0.6)'}
 ];
 
-const condicoes = [
-  { id: 'bom', nome: 'BOM ESTADO', cor: 'rgba(17,136,29,0.5)' },
-  { id: 'manutencao', nome: 'MANUTENÇÃO', cor: 'rgba(255,170,0,0.5)' },
-  { id: 'revisao', nome: 'AGUARDANDO REVISÃO', cor: 'rgba(255,68,68,0.5)' }
-];
+
 
 export default function TelaPlantaEditor() {
-  // Estado para controlar a etapa atual
-  const [etapa, setEtapa] = useState('configuracao'); // 'configuracao' ou 'editor'
 
-  // Estados básicos
+  const [etapa, setEtapa] = useState('configuracao'); 
+
+
   const [nomePatio, setNomePatio] = useState('');
   const [endereco, setEndereco] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [capacidadeTotal, setCapacidadeTotal] = useState('');
 
-  // Estados do canvas
+
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawingZoneMode, setDrawingZoneMode] = useState(false);
   const [currentLine, setCurrentLine] = useState([]);
@@ -33,11 +30,10 @@ export default function TelaPlantaEditor() {
   const [subzonaIndex, setSubzonaIndex] = useState(0);
   const [expandedZonas, setExpandedZonas] = useState({});
 
-  // Refs
+
   const stageRef = useRef(null);
   const isDrawing = useRef(false);
 
-  // Função para avançar para a etapa do editor
   const avancarParaEditor = () => {
     if (!nomePatio.trim() || !endereco.trim() || !responsavel.trim()) {
       alert('DADOS INCOMPLETOS: Preencha todos os campos obrigatórios.');
@@ -46,12 +42,12 @@ export default function TelaPlantaEditor() {
     setEtapa('editor');
   };
 
-  // Função para voltar para a configuração
+
   const voltarParaConfiguracao = () => {
     setEtapa('configuracao');
   };
 
-  // Funções de desenho
+
   const toggleDrawing = () => {
     setDrawingMode(!drawingMode);
     if (drawingZoneMode) setDrawingZoneMode(false);
@@ -68,7 +64,7 @@ export default function TelaPlantaEditor() {
   const handleMouseDown = (e) => {
     if (!drawingMode && !drawingZoneMode) return;
     
-    // Modo de desenho de linhas
+
     if (drawingMode) {
       isDrawing.current = true;
       const pos = e.target.getStage().getPointerPosition();
@@ -112,8 +108,8 @@ export default function TelaPlantaEditor() {
       return;
     }
 
-    if (zonas.length >= 3) {
-      alert('LIMITE EXCEDIDO: Máximo de 3 zonas por pátio.');
+    if (zonas.length >= 4) {
+      alert('LIMITE EXCEDIDO: Máximo de 4 zonas por pátio.');
       return;
     }
 
@@ -140,7 +136,7 @@ export default function TelaPlantaEditor() {
     setDrawingZoneMode(false);
   };
 
-  // Funções de linha
+
   const straightenLine = (lineId) => {
     setLines(
       lines.map((line) => {
@@ -160,110 +156,7 @@ export default function TelaPlantaEditor() {
     setLines(lines.filter((line) => line.id !== lineId));
   };
 
-  // Funções de zona
-  const addZona = () => {
-    if (zonas.length >= 3) {
-      alert('LIMITE EXCEDIDO: Máximo de 3 zonas por pátio.');
-      return;
-    }
-    const zonaId = zonas.length;
-    const novaZona = {
-      id: `zona-${zonaId + 1}`,
-      x: 50 + zonaId * 250,
-      y: 50,
-      width: 200,
-      height: 300,
-      tipo: 'retangulo',
-      rotation: 0,
-      color: modelos[zonaId].cor,
-      nome: modelos[zonaId].nome,
-      capacidade: modelos[zonaId].capacidade,
-      subzonas: []
-    };
-    setZonas([...zonas, novaZona]);
-    setExpandedZonas({ ...expandedZonas, [`zona-${zonaId + 1}`]: false });
-  };
 
-  const addSubzona = () => {
-    if (zonas.length < 3) return;
-    
-    const novaZonas = zonas.map((z) => {
-      if (subzonaIndex < condicoes.length) {
-        const novaSub = {
-          id: `${z.id}-sub-${subzonaIndex + 1}`,
-          nome: condicoes[subzonaIndex].nome,
-          x: z.tipo === 'retangulo' ? z.x + 10 : z.points[0] + 10,
-          y: z.tipo === 'retangulo' ? z.y + 10 + subzonaIndex * 90 : z.points[1] + 10 + subzonaIndex * 90,
-          width: z.tipo === 'retangulo' ? z.width - 20 : 180,
-          height: 80,
-          rotation: 0,
-          color: condicoes[subzonaIndex].cor
-        };
-        return { ...z, subzonas: [...z.subzonas, novaSub] };
-      }
-      return z;
-    });
-    setZonas(novaZonas);
-    setSubzonaIndex(subzonaIndex + 1);
-  };
-
-  const updateZonaSize = (id, width, height) => {
-    setZonas(
-      zonas.map((z) => {
-        if (z.id === id) {
-          const novaSubzonas = z.subzonas.map((sub) => ({
-            ...sub,
-            width: width - 20
-          }));
-          return { ...z, width, height, subzonas: novaSubzonas };
-        }
-        return z;
-      })
-    );
-  };
-
-  const updateSubzonaSize = (zonaId, subId, width, height) => {
-    setZonas(
-      zonas.map((z) => {
-        if (z.id === zonaId) {
-          const novaSubzonas = z.subzonas.map((sub) => {
-            if (sub.id === subId) return { ...sub, width, height };
-            return sub;
-          });
-          return { ...z, subzonas: novaSubzonas };
-        }
-        return z;
-      })
-    );
-  };
-
-  const updateZonaRotation = (id, rotation) => {
-    setZonas(zonas.map(z => z.id === id ? { ...z, rotation } : z));
-  };
-
-  const updateSubzonaRotation = (zonaId, subId, rotation) => {
-    setZonas(
-      zonas.map(z => {
-        if (z.id === zonaId) {
-          const novaSubzonas = z.subzonas.map(sub => 
-            sub.id === subId ? { ...sub, rotation } : sub
-          );
-          return { ...z, subzonas: novaSubzonas };
-        }
-        return z;
-      })
-    );
-  };
-
-  const toggleCollapse = (zonaId) => {
-    setExpandedZonas({ ...expandedZonas, [zonaId]: !expandedZonas[zonaId] });
-  };
-
-  const removerZona = (zonaId) => {
-    if (window.confirm('CONFIRMAR REMOÇÃO: Deseja remover esta zona?')) {
-      setZonas(zonas.filter(z => z.id !== zonaId));
-    }
-  };
 
   const salvarPatio = () => {
     if (zonas.length === 0) {
@@ -287,12 +180,121 @@ export default function TelaPlantaEditor() {
     alert('OPERAÇÃO CONCLUÍDA: Pátio cadastrado no sistema.');
   };
 
-  const capacidadeTotalCalculada = zonas.reduce((total, zona) => {
-    const capacidadeSubzonas = zona.subzonas.reduce((sub, subzona) => sub + 15, 0);
-    return total + (capacidadeSubzonas > 0 ? capacidadeSubzonas : zona.capacidade);
-  }, 0);
+  function normalizarCoordenadas(pontos) {
+  return pontos.map(p => ({
+    x: Math.round(p.x / 10) * 10,
+    y: Math.round(p.y / 10) * 10,
+  }));
+}
 
-  // TELA DE CONFIGURAÇÃO INICIAL
+function fecharForma(pontos) {
+  const primeiro = pontos[0];
+  const ultimo = pontos[pontos.length - 1];
+  const distancia = Math.hypot(ultimo.x - primeiro.x, ultimo.y - primeiro.y);
+  if (distancia > 5) pontos.push({ ...primeiro });
+  return pontos;
+}
+
+function gerarSvgDoLayout(zonas = [], linhas = []) {
+  const zonasSvg = zonas.map(z => {
+    const pontosObj = converterPontos(z.pontos || []);
+    const pontosNormalizados = fecharForma(normalizarCoordenadas(pontosObj));
+    const path = pontosNormalizados.map(p => `${p.x},${p.y}`).join(' ');
+    return `
+      <polygon
+        points="${path}"
+        fill="${z.cor || '#6aa84f'}"
+        stroke="#333"
+        stroke-width="1"
+      />
+    `;
+  }).join('');
+
+  const linhasSvg = linhas.map(l => {
+    const pontosObj = converterPontos(l.pontos || []);
+    const pontosNormalizados = normalizarCoordenadas(pontosObj);
+    const path = pontosNormalizados.map(p => `${p.x},${p.y}`).join(' ');
+    return `
+      <polyline
+        points="${path}"
+        stroke="black"
+        stroke-width="1"
+        fill="none"
+      />
+    `;
+  }).join('');
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+      ${linhasSvg}
+      ${zonasSvg}
+    </svg>
+  `;
+  return svg.trim();
+}
+
+
+function converterPontos(planos) {
+  const pontos = [];
+  for (let i = 0; i < planos.length; i += 2) {
+    pontos.push({ x: planos[i], y: planos[i + 1] });
+  }
+  return pontos;
+}
+
+
+const exportarLayout = () => {
+  const data = {
+    nomePatio,
+    endereco,
+    responsavel,
+    capacidadeTotal,
+    linhas: lines.map(l => ({
+      id: l.id,
+      pontos: l.points,
+    })),
+    zonas: zonas.map(z => ({
+      id: z.id,
+      nome: z.nome,
+      tipo: z.tipo,
+      cor: z.color,
+      largura: z.width,
+      altura: z.height,
+      rotacao: z.rotation,
+      capacidade: z.capacidade,
+      pontos: z.points || [],
+      subzonas: z.subzonas.map(s => ({
+        id: s.id,
+        nome: s.nome,
+        largura: s.width,
+        altura: s.height,
+        rotacao: s.rotation,
+        cor: s.color,
+      })),
+    })),
+  };
+
+
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${nomePatio || "patio"}_layout.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+
+  // Gera o SVG a partir do layout
+  const svg = gerarSvgDoLayout(data.zonas, data.linhas);
+
+  // Cria e abre o SVG no navegador
+  const svgBlob = new Blob([svg], { type: "image/svg+xml" });
+  const svgUrl = URL.createObjectURL(svgBlob);
+  window.open(svgUrl);
+};
+
+
+
   if (etapa === 'configuracao') {
     return (
       <div style={{
@@ -333,7 +335,6 @@ export default function TelaPlantaEditor() {
           </p>
         </div>
 
-        {/* Formulário de Configuração Básica */}
         <div style={{
           width: '500px',
           background: 'rgba(255,255,255,0.05)',
@@ -479,7 +480,6 @@ export default function TelaPlantaEditor() {
     );
   }
 
-  // TELA DO EDITOR
   return (
     <div style={{
       minHeight: '100vh',
@@ -488,7 +488,6 @@ export default function TelaPlantaEditor() {
       fontFamily: '"Courier New", monospace',
       padding: '20px'
     }}>
-      {/* Header do Sistema */}
       <div style={{
         textAlign: 'center',
         marginBottom: '30px',
@@ -514,8 +513,7 @@ export default function TelaPlantaEditor() {
         }}>
           EDITOR DE LAYOUT - {nomePatio.toUpperCase()}
         </p>
-        
-        {/* Botão para voltar à configuração */}
+
         <button 
           style={{
             position: 'absolute',
@@ -539,16 +537,14 @@ export default function TelaPlantaEditor() {
         </button>
       </div>
 
-      {/* Layout Principal - EDITOR */}
+
       <div style={{ display: 'flex', gap: '20px' }}>
-        {/* Painel de Controles */}
         <div style={{
           width: '400px',
           display: 'flex',
           flexDirection: 'column',
           gap: '20px'
         }}>
-          {/* Controles de Desenho */}
           <div style={{
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(1,116,58,0.3)',
@@ -727,306 +723,6 @@ export default function TelaPlantaEditor() {
               </div>
             )}
           </div>
-
-          {/* Controles de Zonas */}
-          <div style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,170,0,0.3)',
-            borderRadius: '8px',
-            padding: '20px'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '15px',
-              borderBottom: '1px solid rgba(255,170,0,0.2)',
-              paddingBottom: '10px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.2rem' }}>⚡</span>
-                <h2 style={{ margin: '0', fontSize: '1.1rem' }}>SISTEMA DE ZONAS</h2>
-              </div>
-              <span style={{ fontSize: '0.85rem', color: '#ffaa00' }}>
-                {zonas.length}/3 | {capacidadeTotalCalculada} VAGAS
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
-              <button 
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: zonas.length >= 3 ? 'rgba(100,100,100,0.3)' : 'rgba(255,170,0,0.2)',
-                  border: '1px solid rgba(255,170,0,0.5)',
-                  borderRadius: '4px',
-                  color: '#fff',
-                  fontSize: '0.9rem',
-                  cursor: zonas.length >= 3 ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px'
-                }}
-                onClick={addZona} 
-                disabled={zonas.length >= 3}
-              >
-                <span>➕</span>
-                <span>ADICIONAR ZONA</span>
-              </button>
-
-              <button 
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: (zonas.length < 3 || subzonaIndex >= condicoes.length) ? 'rgba(100,100,100,0.3)' : 'rgba(255,170,0,0.2)',
-                  border: '1px solid rgba(255,170,0,0.5)',
-                  borderRadius: '4px',
-                  color: '#fff',
-                  fontSize: '0.9rem',
-                  cursor: (zonas.length < 3 || subzonaIndex >= condicoes.length) ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px'
-                }}
-                onClick={addSubzona} 
-                disabled={zonas.length < 3 || subzonaIndex >= condicoes.length}
-              >
-                <span>🔧</span>
-                <span>ADICIONAR SUBZONA</span>
-              </button>
-            </div>
-
-            {zonas.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>ZONAS CONFIGURADAS</h3>
-                {zonas.map(z => (
-                  <div key={z.id} style={{
-                    background: 'rgba(0,0,0,0.3)',
-                    borderRadius: '4px',
-                    marginBottom: '10px',
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '10px',
-                      cursor: 'pointer'
-                    }}>
-                      <div 
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          backgroundColor: z.color,
-                          borderRadius: '3px',
-                          marginRight: '10px'
-                        }}
-                      />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
-                          {z.id} - {z.nome}
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: '#888' }}>
-                          {z.tipo === 'retangulo' 
-                            ? `${z.width}x${z.height} | ${z.capacidade} VAGAS`
-                            : `POLÍGONO ${z.points.length / 2} PONTOS | ${z.capacidade} VAGAS`
-                          }
-                        </div>
-                      </div>
-                      <button
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#fff',
-                          fontSize: '1rem',
-                          cursor: 'pointer',
-                          padding: '5px'
-                        }}
-                        onClick={() => toggleCollapse(z.id)}
-                      >
-                        {expandedZonas[z.id] ? '▲' : '▼'}
-                      </button>
-                    </div>
-
-                    {expandedZonas[z.id] && (
-                      <div style={{ padding: '10px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                        {z.tipo === 'retangulo' ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <label style={{ fontSize: '0.8rem', width: '80px' }}>LARGURA:</label>
-                              <input 
-                                type="number" 
-                                value={z.width} 
-                                onChange={e => updateZonaSize(z.id, parseInt(e.target.value) || z.width, z.height)}
-                                style={{
-                                  flex: 1,
-                                  padding: '5px',
-                                  background: 'rgba(0,0,0,0.5)',
-                                  border: '1px solid rgba(255,170,0,0.3)',
-                                  borderRadius: '3px',
-                                  color: '#fff',
-                                  fontSize: '0.85rem'
-                                }}
-                              />
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <label style={{ fontSize: '0.8rem', width: '80px' }}>ALTURA:</label>
-                              <input 
-                                type="number" 
-                                value={z.height} 
-                                onChange={e => updateZonaSize(z.id, z.width, parseInt(e.target.value) || z.height)}
-                                style={{
-                                  flex: 1,
-                                  padding: '5px',
-                                  background: 'rgba(0,0,0,0.5)',
-                                  border: '1px solid rgba(255,170,0,0.3)',
-                                  borderRadius: '3px',
-                                  color: '#fff',
-                                  fontSize: '0.85rem'
-                                }}
-                              />
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <label style={{ fontSize: '0.8rem', width: '80px' }}>ROTAÇÃO:</label>
-                              <input 
-                                type="number" 
-                                value={z.rotation} 
-                                onChange={e => updateZonaRotation(z.id, parseInt(e.target.value) || 0)}
-                                style={{
-                                  flex: 1,
-                                  padding: '5px',
-                                  background: 'rgba(0,0,0,0.5)',
-                                  border: '1px solid rgba(255,170,0,0.3)',
-                                  borderRadius: '3px',
-                                  color: '#fff',
-                                  fontSize: '0.85rem'
-                                }}
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div style={{
-                            padding: '10px',
-                            background: 'rgba(1,116,58,0.1)',
-                            borderRadius: '4px',
-                            textAlign: 'center'
-                          }}>
-                            <p style={{ fontSize: '0.85rem', margin: '5px 0' }}>
-                              Zona personalizada com {z.points.length / 2} pontos
-                            </p>
-                            <p style={{ fontSize: '0.75rem', color: '#888', margin: '5px 0' }}>
-                              Arraste a zona no canvas para reposicionar
-                            </p>
-                          </div>
-                        )}
-
-                        <button 
-                          style={{
-                            width: '100%',
-                            marginTop: '10px',
-                            padding: '8px',
-                            background: 'rgba(255,0,0,0.3)',
-                            border: '1px solid rgba(255,0,0,0.5)',
-                            borderRadius: '4px',
-                            color: '#fff',
-                            fontSize: '0.85rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '5px'
-                          }}
-                          onClick={() => removerZona(z.id)}
-                        >
-                          🗑️ REMOVER ZONA
-                        </button>
-
-                        {z.subzonas.length > 0 && (
-                          <div style={{ marginTop: '15px' }}>
-                            <h4 style={{ fontSize: '0.85rem', marginBottom: '10px' }}>SUBZONAS</h4>
-                            {z.subzonas.map(sub => (
-                              <div key={sub.id} style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                padding: '8px',
-                                background: 'rgba(0,0,0,0.3)',
-                                borderRadius: '3px',
-                                marginBottom: '5px'
-                              }}>
-                                <div 
-                                  style={{
-                                    width: '15px',
-                                    height: '15px',
-                                    backgroundColor: sub.color,
-                                    borderRadius: '2px',
-                                    flexShrink: 0
-                                  }}
-                                />
-                                <div style={{ flex: 1, fontSize: '0.8rem' }}>
-                                  {sub.nome}
-                                </div>
-                                <div style={{ display: 'flex', gap: '5px' }}>
-                                  <input 
-                                    type="number" 
-                                    value={sub.width} 
-                                    onChange={e => updateSubzonaSize(z.id, sub.id, parseInt(e.target.value) || sub.width, sub.height)}
-                                    placeholder="L"
-                                    style={{
-                                      width: '50px',
-                                      padding: '3px',
-                                      background: 'rgba(0,0,0,0.5)',
-                                      border: '1px solid rgba(255,170,0,0.3)',
-                                      borderRadius: '3px',
-                                      color: '#fff',
-                                      fontSize: '0.75rem'
-                                    }}
-                                  />
-                                  <input 
-                                    type="number" 
-                                    value={sub.height} 
-                                    onChange={e => updateSubzonaSize(z.id, sub.id, sub.width, parseInt(e.target.value) || sub.height)}
-                                    placeholder="A"
-                                    style={{
-                                      width: '50px',
-                                      padding: '3px',
-                                      background: 'rgba(0,0,0,0.5)',
-                                      border: '1px solid rgba(255,170,0,0.3)',
-                                      borderRadius: '3px',
-                                      color: '#fff',
-                                      fontSize: '0.75rem'
-                                    }}
-                                  />
-                                  <input 
-                                    type="number" 
-                                    value={sub.rotation} 
-                                    onChange={e => updateSubzonaRotation(z.id, sub.id, parseInt(e.target.value) || 0)}
-                                    placeholder="R"
-                                    style={{
-                                      width: '50px',
-                                      padding: '3px',
-                                      background: 'rgba(0,0,0,0.5)',
-                                      border: '1px solid rgba(255,170,0,0.3)',
-                                      borderRadius: '3px',
-                                      color: '#fff',
-                                      fontSize: '0.75rem'
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Botão de Salvar */}
           <button 
             style={{
               width: '100%',
@@ -1061,7 +757,33 @@ export default function TelaPlantaEditor() {
             <span>REGISTRAR PÁTIO</span>
           </button>
 
-          {/* Dados Básicos (agora abaixo do botão Registrar Pátio) */}
+          <button 
+  style={{
+    width: '100%',
+    padding: '15px',
+    background: 'linear-gradient(135deg, rgba(255,170,0,0.3), rgba(255,170,0,0.5))',
+    border: '2px solid #ffaa00',
+    borderRadius: '8px',
+    color: '#fff',
+    fontSize: '1rem',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    textTransform: 'uppercase',
+    letterSpacing: '2px',
+    boxShadow: '0 0 20px rgba(255,170,0,0.3)',
+    transition: 'all 0.3s'
+  }}
+  onClick={exportarLayout}
+>
+  <span>📦</span>
+  <span>EXPORTAR LAYOUT</span>
+</button>
+
+
           <div style={{
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(1,116,58,0.3)',
@@ -1148,7 +870,6 @@ export default function TelaPlantaEditor() {
           </div>
         </div>
 
-        {/* Canvas de Desenho */}
         <div style={{ flex: 1 }}>
           <div style={{
             background: 'rgba(255,255,255,0.05)',
@@ -1205,7 +926,7 @@ export default function TelaPlantaEditor() {
                 }}
               >
                 <Layer>
-                  {/* Linhas desenhadas */}
+
                   {lines.map(line => (
                     <Line 
                       key={line.id} 
@@ -1218,7 +939,7 @@ export default function TelaPlantaEditor() {
                     />
                   ))}
                   
-                  {/* Linha atual sendo desenhada */}
+
                   {currentLine.length > 0 && (
                     <Line 
                       points={currentLine} 
@@ -1230,7 +951,7 @@ export default function TelaPlantaEditor() {
                     />
                   )}
 
-                  {/* Zona sendo desenhada */}
+
                   {currentZonePoints.length > 0 && (
                     <>
                       <Line 
@@ -1241,7 +962,7 @@ export default function TelaPlantaEditor() {
                         lineJoin="round"
                         dash={[10, 5]}
                       />
-                      {/* Mostrar pontos */}
+
                       {currentZonePoints.map((_, index) => {
                         if (index % 2 === 0) {
                           return (
@@ -1261,7 +982,7 @@ export default function TelaPlantaEditor() {
                     </>
                   )}
 
-                  {/* Zonas */}
+
                   {zonas.map(z => (
                     <React.Fragment key={z.id}>
                       {z.tipo === 'retangulo' ? (
@@ -1337,7 +1058,7 @@ export default function TelaPlantaEditor() {
                         </>
                       )}
                       
-                      {/* Subzonas */}
+
                       {z.subzonas.map(sub => (
                         <React.Fragment key={sub.id}>
                           <Rect 
