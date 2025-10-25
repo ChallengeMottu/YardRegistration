@@ -13,9 +13,14 @@ export default function TelaPlantaEditor() {
   const [modalAberto, setModalAberto] = useState(false);
 
   const [nomePatio, setNomePatio] = useState('');
-  const [endereco, setEndereco] = useState('');
-  const [responsavel, setResponsavel] = useState('');
   const [capacidadeTotal, setCapacidadeTotal] = useState('');
+
+   const [street, setStreet] = useState("");
+  const [complement, setComplement] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
+  const [cep, setCep] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
 
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawingZoneMode, setDrawingZoneMode] = useState(false);
@@ -35,7 +40,7 @@ export default function TelaPlantaEditor() {
   }, [etapa]);
 
   const avancarParaEditor = () => {
-    if (!nomePatio.trim() || !endereco.trim() || !responsavel.trim()) {
+    if (!nomePatio.trim() || !street.trim() || !complement.trim() || !neighborhood.trim() || !cep.trim() || !city.trim() || !state.trim()) {
       alert('DADOS INCOMPLETOS: Preencha todos os campos obrigatórios.');
       return;
     }
@@ -170,27 +175,93 @@ export default function TelaPlantaEditor() {
     setLines(lines.filter((line) => line.id !== lineId));
   };
 
-  const salvarPatio = () => {
-    if (zonas.length === 0) {
-      alert('CONFIGURAÇÃO INVÁLIDA: Adicione pelo menos uma zona ao pátio.');
+  async function salvarPatio() {
+  if (!nomePatio.trim() ||(!nomePatio.trim() || !street.trim() || !complement.trim() || !neighborhood.trim() || !cep.trim() || !city.trim() || !state.trim()|| !capacidadeTotal)) {
+    alert('PREENCHA TODOS OS CAMPOS ANTES DE SALVAR.');
+    return;
+  }
+
+  if (zonas.length === 0) {
+    alert('ADICIONE PELO MENOS UMA ZONA AO PÁTIO.'); 
+    return;
+  }
+
+  try {
+    const estruturaSVG = gerarEstruturaSVG();
+    const completoSVG = gerarSVGCompleto();
+
+    const payload = {
+      name: nomePatio,
+      location: {
+        street: street,
+        complement: complement,
+        neighborhood: neighborhood,
+        cep:cep,
+        city: city,
+        state:state
+        
+      },
+      availableArea: 0, // você pode calcular ou deixar 0
+      capacity: parseInt(capacidadeTotal),
+      structurePlan: estruturaSVG,
+      floorPlan: completoSVG
+    };
+
+    const response = await fetch("https://localhost:7231/parkings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const erro = await response.json();
+      console.error(erro);
+      alert(`Erro ao salvar: ${erro.message || response.statusText}`);
       return;
     }
 
-    const patio = {
-      id: `patio_${Date.now()}`,
-      nome: nomePatio,
-      endereco,
-      responsavel,
-      capacidadeTotal: parseInt(capacidadeTotal) || 0,
-      zonas,
-      linhas: lines,
-      dataCriacao: new Date().toISOString(),
-      status: 'ATIVO'
-    };
+    const data = await response.json();
+    console.log("Pátio criado:", data);
+    window.location.href = "/tela-success";
 
-    console.log('Pátio salvo:', patio);
-    alert('OPERAÇÃO CONCLUÍDA: Pátio cadastrado no sistema.');
-  };
+  } catch (error) {
+    console.error("Erro:", error);
+    alert("❌ Erro ao salvar o pátio. Verifique a conexão.");
+  }
+}
+
+
+  function gerarEstruturaSVG() {
+  const svgContent = lines.map(linha => {
+    if (linha.points.length >= 4) {
+      const x1 = linha.points[0];
+      const y1 = linha.points[1];
+      const x2 = linha.points[linha.points.length - 2];
+      const y2 = linha.points[linha.points.length - 1];
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#11881D" stroke-width="2" />`;
+    }
+    return '';
+  }).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>`;
+}
+
+function gerarSVGCompleto() {
+  const svgContentLines = lines.map(linha => {
+    const pointsStr = linha.points.join(',');
+    return `<polyline points="${pointsStr}" stroke="#11881D" stroke-width="2" fill="none"/>`;
+  }).join('');
+
+  const svgContentZonas = zonas.map(z => {
+    const pointsStr = z.points.join(',');
+    return `<polygon points="${pointsStr}" fill="${z.color}" stroke="#ffffff" stroke-width="2"/>`;
+  }).join('');
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1050">${svgContentLines}${svgContentZonas}</svg>`;
+}
+
 
   function exportarEstruturaSVG() {
     const svgContent = lines.map(linha => {
@@ -277,189 +348,274 @@ export default function TelaPlantaEditor() {
   }
 
   if (etapa === 'configuracao') {
-    return (
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #000 0%, #002714ff 100%)',
+      color: '#ffffff',
+      fontFamily: '"Courier New", monospace',
+      padding: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      
       <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #000 0%, #002714ff 100%)',
-        color: '#ffffff',
-        fontFamily: '"Courier New", monospace',
-        padding: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center'
+        textAlign: 'center',
+        marginBottom: '50px',
+        borderBottom: '2px solid #01743A',
+        paddingBottom: '20px'
       }}>
-        
-        <div style={{
-          textAlign: 'center',
-          marginBottom: '50px',
-          borderBottom: '2px solid #01743A',
-          paddingBottom: '20px'
+        <h1 style={{
+          fontSize: '2.5rem',
+          fontWeight: 'bold',
+          textTransform: 'uppercase',
+          letterSpacing: '3px',
+          color: '#01743A',
+          textShadow: '0 0 20px rgba(1,116,58,0.5)',
+          margin: '0'
         }}>
-          <h1 style={{
-            fontSize: '2.5rem',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-            letterSpacing: '3px',
-            color: '#01743A',
-            textShadow: '0 0 20px rgba(1,116,58,0.5)',
-            margin: '0'
-          }}>
-            CONFIGURADOR DE PÁTIO
-          </h1>
-          <p style={{
-            color: '#888',
-            fontSize: '0.9rem',
-            marginTop: '10px'
-          }}>
-            SISTEMA DE GERENCIAMENTO ESPACIAL
-          </p>
+          CONFIGURADOR DE PÁTIO
+        </h1>
+        <p style={{
+          color: '#888',
+          fontSize: '0.9rem',
+          marginTop: '10px'
+        }}>
+          SISTEMA DE GERENCIAMENTO ESPACIAL
+        </p>
+      </div>
+
+      <div style={{
+        width: '500px',
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(1,116,58,0.3)',
+        borderRadius: '8px',
+        padding: '40px'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '30px',
+          borderBottom: '1px solid rgba(1,116,58,0.2)',
+          paddingBottom: '15px'
+        }}>
+          <span style={{ fontSize: '1.5rem' }}>⚙️</span>
+          <h2 style={{ margin: '0', fontSize: '1.3rem' }}>1° ETAPA - CADASTRO DO PÁTIO</h2>
         </div>
 
-        <div style={{
-          width: '500px',
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(1,116,58,0.3)',
-          borderRadius: '8px',
-          padding: '40px'
-        }}>
-          <div style={{
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              NOME PÁTIO
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              placeholder="DIGITE O NOME DO PÁTIO"
+              value={nomePatio}
+              onChange={(e) => setNomePatio(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              RUA
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              placeholder="EX: AV. PAULISTA"
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              COMPLEMENTO
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              placeholder="APTO, SALA, ETC."
+              value={complement}
+              onChange={(e) => setComplement(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              BAIRRO
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              placeholder="EX: JARDINS"
+              value={neighborhood}
+              onChange={(e) => setNeighborhood(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              CEP
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              placeholder="EX: 01311000"
+              value={cep}
+              onChange={(e) => setCep(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              CIDADE
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              placeholder="EX: SÃO PAULO"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              ESTADO
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              placeholder="EX: SP"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              CAPACIDADE MÁXIMA
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              type="number"
+              placeholder="NÚMERO MÁXIMO DE VEÍCULOS"
+              value={capacidadeTotal}
+              onChange={(e) => setCapacidadeTotal(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <button 
+          style={{
+            width: '100%',
+            padding: '15px',
+            background: 'linear-gradient(135deg, rgba(1,116,58,0.3), rgba(1,116,58,0.5))',
+            border: '2px solid #01743A',
+            borderRadius: '8px',
+            color: '#fff',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '10px',
-            marginBottom: '30px',
-            borderBottom: '1px solid rgba(1,116,58,0.2)',
-            paddingBottom: '15px'
-          }}>
-            <span style={{ fontSize: '1.5rem' }}>⚙️</span>
-            <h2 style={{ margin: '0', fontSize: '1.3rem' }}>INFORMAÇÕES DO PÁTIO</h2>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
-                NOME PÁTIO
-              </label>
-              <input
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'rgba(0,0,0,0.5)',
-                  border: '1px solid rgba(1,116,58,0.3)',
-                  borderRadius: '4px',
-                  color: '#fff',
-                  fontSize: '0.9rem',
-                  fontFamily: '"Courier New", monospace'
-                }}
-                placeholder="DIGITE O NOME DO PÁTIO"
-                value={nomePatio}
-                onChange={(e) => setNomePatio(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
-                ENDEREÇO
-              </label>
-              <input
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'rgba(0,0,0,0.5)',
-                  border: '1px solid rgba(1,116,58,0.3)',
-                  borderRadius: '4px',
-                  color: '#fff',
-                  fontSize: '0.9rem',
-                  fontFamily: '"Courier New", monospace'
-                }}
-                placeholder="LOCALIZAÇÃO DO PÁTIO"
-                value={endereco}
-                onChange={(e) => setEndereco(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
-                RESPONSÁVEL TÊCNICO
-              </label>
-              <input
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'rgba(0,0,0,0.5)',
-                  border: '1px solid rgba(1,116,58,0.3)',
-                  borderRadius: '4px',
-                  color: '#fff',
-                  fontSize: '0.9rem',
-                  fontFamily: '"Courier New", monospace'
-                }}
-                placeholder="NOME DO RESPONSÁVEL"
-                value={responsavel}
-                onChange={(e) => setResponsavel(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
-                CAPACIDADE MÁXIMA
-              </label>
-              <input
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'rgba(0,0,0,0.5)',
-                  border: '1px solid rgba(1,116,58,0.3)',
-                  borderRadius: '4px',
-                  color: '#fff',
-                  fontSize: '0.9rem',
-                  fontFamily: '"Courier New", monospace'
-                }}
-                type="number"
-                placeholder="NÚMERO MÁXIMO DE VEÍCULOS"
-                value={capacidadeTotal}
-                onChange={(e) => setCapacidadeTotal(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <button 
-            style={{
-              width: '100%',
-              padding: '15px',
-              background: 'linear-gradient(135deg, rgba(1,116,58,0.3), rgba(1,116,58,0.5))',
-              border: '2px solid #01743A',
-              borderRadius: '8px',
-              color: '#fff',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              textTransform: 'uppercase',
-              letterSpacing: '2px',
-              boxShadow: '0 0 20px rgba(1,116,58,0.3)',
-              transition: 'all 0.3s',
-              marginTop: '30px'
-            }}
-            onClick={avancarParaEditor}
-            onMouseEnter={(e) => {
-              e.target.style.boxShadow = '0 0 30px rgba(1,116,58,0.6)';
-              e.target.style.transform = 'scale(1.02)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.boxShadow = '0 0 20px rgba(1,116,58,0.3)';
-              e.target.style.transform = 'scale(1)';
-            }}
-          >
-            <span>🚀</span>
-            <span>INICIAR CONFIGURAÇÃO DO PÁTIO</span>
-          </button>
-        </div>
+            textTransform: 'uppercase',
+            letterSpacing: '2px',
+            boxShadow: '0 0 20px rgba(1,116,58,0.3)',
+            transition: 'all 0.3s',
+            marginTop: '30px'
+          }}
+          onClick={avancarParaEditor}
+          onMouseEnter={(e) => {
+            e.target.style.boxShadow = '0 0 30px rgba(1,116,58,0.6)';
+            e.target.style.transform = 'scale(1.02)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.boxShadow = '0 0 20px rgba(1,116,58,0.3)';
+            e.target.style.transform = 'scale(1)';
+          }}
+        >
+          <span>🚀</span>
+          <span>INICIAR CONFIGURAÇÃO DO PÁTIO</span>
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   return (
     <div style={{
