@@ -43,6 +43,10 @@ export default function TelaLogin() {
     }
   };
 
+  const handlePage = ()=>{
+    window.location.href = "/tela-editor";
+  }
+
   return (
     <div
       style={{
@@ -91,8 +95,8 @@ export default function TelaLogin() {
 
       <div
         style={{
-          width: "350px",
-          height: "50vh",
+          width: "400px",
+          height: "40vh",
           background: "rgba(255,255,255,0.05)",
           border: "1px solid rgba(1,116,58,0.3)",
           borderRadius: "8px",
@@ -109,12 +113,12 @@ export default function TelaLogin() {
             paddingBottom: "15px",
           }}
         >
-          <h2 style={{ margin: "0", fontSize: "1.3rem" }}>
+          <h2 style={{ textAlign: 'center', marginLeft: '60px', fontSize: "18px" }}>
             Entre com sua conta Pulse
           </h2>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginLeft: '30px'}}>
           <div>
             <label
               style={{
@@ -128,7 +132,7 @@ export default function TelaLogin() {
             </label>
             <input
               style={{
-                width: "90%",
+                width: "85%",
                 padding: "12px",
                 background: "rgba(0,0,0,0.5)",
                 border: "1px solid rgba(1,116,58,0.3)",
@@ -157,7 +161,7 @@ export default function TelaLogin() {
             <input
               type="password"
               style={{
-                width: "100%",
+                width: "85%",
                 padding: "12px",
                 background: "rgba(0,0,0,0.5)",
                 border: "1px solid rgba(1,116,58,0.3)",
@@ -174,8 +178,9 @@ export default function TelaLogin() {
 
           <button
             style={{
-              width: "100%",
+              width: "85%",
               padding: "15px",
+              marginLeft: '15px',
               background:
                 "linear-gradient(135deg, rgba(1,116,58,0.3), rgba(1,116,58,0.5))",
               border: "2px solid #01743A",
@@ -194,7 +199,7 @@ export default function TelaLogin() {
               transition: "all 0.3s",
               marginTop: "30px",
             }}
-            onClick={handleLogin}
+            onClick={handlePage}
           >
             <span>ENTRAR</span>
           </button>

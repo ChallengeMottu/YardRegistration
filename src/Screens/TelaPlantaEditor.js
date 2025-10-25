@@ -14,6 +14,7 @@ export default function TelaPlantaEditor() {
 
   const [nomePatio, setNomePatio] = useState('');
   const [capacidadeTotal, setCapacidadeTotal] = useState('');
+  const[availableArea, setAvailableArea] = useState('');
 
    const [street, setStreet] = useState("");
   const [complement, setComplement] = useState("");
@@ -201,7 +202,7 @@ export default function TelaPlantaEditor() {
         state:state
         
       },
-      availableArea: 0, // você pode calcular ou deixar 0
+      availableArea: parseInt(availableArea), 
       capacity: parseInt(capacidadeTotal),
       structurePlan: estruturaSVG,
       floorPlan: completoSVG
@@ -573,6 +574,28 @@ function gerarSVGCompleto() {
               placeholder="NÚMERO MÁXIMO DE VEÍCULOS"
               value={capacidadeTotal}
               onChange={(e) => setCapacidadeTotal(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: '#01743A', marginBottom: '8px' }}>
+              Área Total (para alocação)
+            </label>
+            <input
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(1,116,58,0.3)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontFamily: '"Courier New", monospace'
+              }}
+              type="number"
+              placeholder="ÁREA TOTAL DISPONÍVEL (em km2)"
+              value={availableArea}
+              onChange={(e) => setAvailableArea(e.target.value)}
             />
           </div>
         </div>
