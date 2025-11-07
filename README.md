@@ -32,6 +32,15 @@ O objetivo é oferecer uma interface simples e eficiente para gestão dos estaci
 
 ---
 
+## 🔗 Integração com API Backend .NET
+
+A interface consome endpoints fornecidos por uma API desenvolvida em **.NET 8**.
+
+👉 **API Backend .NET**  
+https://github.com/ChallengeMottu/ParkingRegistration.git
+
+---
+
 ## ▶️ Como Rodar o Projeto
 
 ### 1. Instalar dependências
