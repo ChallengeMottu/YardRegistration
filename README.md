@@ -18,3 +18,46 @@ O **Pulse Parking Web** é um painel administrativo que permite:
 O objetivo é oferecer uma interface simples e eficiente para gestão dos estacionamentos que compõem o ecossistema Pulse.
 
 ---
+
+## 🛠️ Tecnologias Utilizadas
+
+| Tecnologia | Função |
+|-----------|--------|
+| **React (Create React App)** | Frontend da aplicação |
+| **React Konva / Konva** | Canvas e manipulação gráfica |
+| **React RND** | Drag & resize de elementos |
+| **React Router DOM** | Navegação |
+| **Testing Library** | Testes |
+| **Web Vitals** | Métricas de desempenho |
+
+---
+
+## ▶️ Como Rodar o Projeto
+
+### 1. Instalar dependências
+```bash
+npm install
+```
+
+### 2. Iniciar a aplicação
+```bash
+npm start
+```
+
+### A aplicação ficará disponível em:
+```bash
+http://localhost:3000
+```
+
+---
+
+## Status atual
+- ✔️ Funcionalidades principais de desenho
+- ✔️ Integração básica com API
+- ⏳ Ajustes visuais e melhorias de UX
+- ⏳ Suporte para múltiplas zonas e camadas avançadas
+
+
+
+
+---
