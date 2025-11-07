@@ -1,4 +1,4 @@
-# Yard Registration – Interface Web para Cadastro de Pátios
+# Yard Registration 
 
 Este repositório contém a **interface web** utilizada pelos **gestores** do sistema **Pulse** para realizar o **cadastro e gerenciamento de pátios (Parkings)**.  
 A aplicação é desenvolvida em **React**, consumindo a API backend construída em **.NET**.
